@@ -19,6 +19,108 @@ return [
 	*/
 	'disallowed_countries' => [],
 
+    /*
+	|--------------------------------------------------------------------------
+	| Supported country code.
+	|--------------------------------------------------------------------------
+	*/
+	'accepted_country_code' => [
+		'AD',
+		'AR',
+		'AS',
+		'AT',
+		'AU',
+		'AX',
+		'AZ',
+		'BD',
+		'BE',
+		'BG',
+		'BM',
+		'BR',
+		'BY',
+		'CA',
+		'CH',
+		'CL',
+		'CO',
+        'CR',
+		'CY',
+		'CZ',
+		'DE',
+		'DK',
+		'DO',
+		'DZ',
+		'EE',
+		'ES',
+		'FI',
+		'FM',
+		'FO',
+		'FR',
+		'GB',
+		'GF',
+		'GG',
+		'GL',
+        'GP',
+		'GT',
+		'GU',
+		'HR',
+		'HU',
+		'IE',
+		'IM',
+		'IN',
+		'IS',
+		'IT',
+		'JE',
+		'JP',
+		'KR',
+		'LI',
+		'LK',
+		'LT',
+		'LU',
+        'LV',
+		'MC',
+		'MD',
+		'MH',
+		'MK',
+		'MP',
+		'MQ',
+		'MT',
+		'MW',
+		'MX',
+		'MY',
+		'NC',
+		'NL',
+		'NO',
+		'NZ',
+		'PE',
+		'PH',
+        'PK',
+		'PL',
+		'PM',
+		'PR',
+		'PT',
+		'PW',
+		'RE',
+		'RO',
+		'RS',
+		'RU',
+		'SE',
+		'SG',
+		'SI',
+		'SJ',
+		'SK',
+		'SM',
+		'TH',
+        'TR',
+		'UA',
+		'US',
+		'UY',
+		'VA',
+		'VI',
+		'WF',
+		'YT',
+		'ZA',
+	],
+
 	/*
 	|--------------------------------------------------------------------------
 	| Supported locales.
@@ -69,7 +171,7 @@ return [
 	*/
 	'migrations' => [
 		'countries' => [
-			'table_name' => 'countries',
+			'table_name' => 'worldcountries',
 			'optional_fields' => [
 				'phone_code' => [
 					'required' => true,
@@ -112,7 +214,7 @@ return [
 			],
 		],
 		'states' => [
-			'table_name' => 'states',
+			'table_name' => 'worldstates',
 			'optional_fields' => [
 				'country_code' => [
 					'required' => true,
@@ -122,7 +224,7 @@ return [
 				'state_code' => [
 					'required' => false,
 					'type' => 'string',
-					'length' => 3,
+					'length' => 6,
 				],
 				'latitude' => [
 					'required' => false,
@@ -135,7 +237,7 @@ return [
 			],
 		],
 		'cities' => [
-			'table_name' => 'cities',
+			'table_name' => 'worldcities',
 			'optional_fields' => [
 				'country_code' => [
 					'required' => true,
@@ -145,7 +247,7 @@ return [
 				'state_code' => [
 					'required' => false,
 					'type' => 'string',
-					'length' => 3,
+					'length' => 6,
 				],
 				'latitude' => [
 					'required' => false,
@@ -155,16 +257,40 @@ return [
 					'required' => false,
 					'type' => 'string',
 				],
+                'zipcode' => [
+					'required' => false,
+					'type' => 'string',
+				],
+                'state' => [
+					'required' => false,
+					'type' => 'string',
+				],
+                'province' => [
+					'required' => false,
+					'type' => 'string',
+				],
+                'province_code' => [
+					'required' => false,
+					'type' => 'string',
+				],
+                'community' => [
+					'required' => false,
+					'type' => 'string',
+				],
+                'community_code' => [
+					'required' => false,
+					'type' => 'string',
+				],
 			],
 		],
 		'timezones' => [
-			'table_name' => 'timezones',
+			'table_name' => 'worldtimezones',
 		],
 		'currencies' => [
-			'table_name' => 'currencies',
+			'table_name' => 'worldcurrencies',
 		],
 		'languages' => [
-			'table_name' => 'languages',
+			'table_name' => 'worldlanguages',
 		],
 	],
 ];
