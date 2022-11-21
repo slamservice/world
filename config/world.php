@@ -281,6 +281,10 @@ return [
 					'required' => false,
 					'type' => 'string',
 				],
+                'full_city' => [
+					'required' => true,
+					'type' => 'string',
+				],
 			],
 		],
 		'timezones' => [

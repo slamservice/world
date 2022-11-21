@@ -19,6 +19,12 @@ class CreateCitiesTable extends Migration
 			$table->foreignId('state_id');
 			$table->string('name');
 
+            $table->string('full_city')->virtualAs(
+                config('database.default') === 'sqlite'
+                    ? "zipcode  || ' - ' || name  || ' ' || province_code"
+                    : "CONCAT(zipcode, ' - ', name, ' ', '(',province_code,')')"
+            );
+
 			foreach (config('world.migrations.cities.optional_fields') as $field => $value) {
 				if ($value['required']) {
 					$table->string($field, $value['length'] ?? null)->nullable();

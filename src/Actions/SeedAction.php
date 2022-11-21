@@ -66,14 +66,16 @@ class SeedAction extends Seeder
         $this->forgetFields($countryFields, ['id']);
 
         foreach (array_chunk($this->countries['data'], 20) as $countryChunks) {
-
+            //dd($countryChunks);
             foreach ($countryChunks as $countryArray) {
+                //dd($countryArray['id']);
 
                 $countryArray = array_map(fn ($field) => gettype($field) === 'string' ? trim($field) : $field, $countryArray);
 
                 $country = Models\Country::create(Arr::only($countryArray, $countryFields));
                 // states and cities
                 if ($this->isModuleEnabled('states')) {
+                    //dd($country);
                     $this->seedStates($country, $countryArray);
                 }
                 // timezones
@@ -164,6 +166,7 @@ class SeedAction extends Seeder
             $this->countries['data'] = Arr::where($this->countries['data'], function ($value, $key) {
                 return !in_array($value['iso2'], config('world.disallowed_countries'));
             });
+        //dd(count($this->countries['data']));
     }
 
     /**
@@ -173,95 +176,186 @@ class SeedAction extends Seeder
     private function seedStates(Models\Country $country, array $countryArray): void
     {
         // country states and cities
-        $countryStates = Arr::where($this->modules['states']['data'], fn ($state) => $state['country_id'] === $countryArray['id']);
-        // state schema
-        $stateFields = Schema::getColumnListing(config('world.migrations.states.table_name'));
-        //$country_zipcode =  config('world.accepted_country_zipcode');
+        $country_code = $countryArray['iso2'];
+        if (in_array($country_code, config('world.accepted_country_zipcode'))) {
+            $moduleSourcePath = __DIR__ . '/../../resources/json/data/' . $country_code . '/zipcodes.' . strtolower($country_code) . '.json';
+            if (File::exists($moduleSourcePath)) {
+                $this->modules['cities']['data'] = json_decode(File::get($moduleSourcePath), true);
+            }
+            //$countryStates = Arr::where($this->modules['states']['data'], fn ($state) => $state['country_id'] === $countryArray['id']);
 
+            //dd($countryStates);
+            $stateFields = Schema::getColumnListing(config('world.migrations.states.table_name'));
+            $this->forgetFields($stateFields, ['id', 'country_id']);
+            foreach ($this->modules['cities']['data']  as $zipcodeplace) {
+                //$stateArray = array_map(fn ($field) => gettype($field) === 'string' ? trim($field) : $field, $stateArray);
+                $zipcodeplace['country_id'] = $countryArray['id'];
+                $zipcodeplace['name'] = $zipcodeplace['state'];
+                //$this->command->getOutput()->block($zipcodeplace['state']);
+                //$stateArray['name'] = $zipcodeplace['state'];
+                //$stateArray['state_code'] = $zipcodeplace['state_code'];
 
-        $this->forgetFields($stateFields, ['id', 'country_id']);
-
-        foreach (array_chunk($countryStates, 20) as $stateChunks) {
-
-            foreach ($stateChunks as $stateArray) {
-
-                $stateArray = array_map(fn ($field) => gettype($field) === 'string' ? trim($field) : $field, $stateArray);
-                //dd($stateArray);
-                $country_code = $stateArray['country_code'];
-                if (in_array($country_code, config('world.accepted_country_zipcode'))) {
-
-                } else {
-                    $state = $country
+                $state = $country
                     ->states()
-                    ->create(Arr::only($stateArray, $stateFields));
-                }
-
-                //dd($stateArray,$state);
-
-                // state cities
-                if ($this->isModuleEnabled('cities')) {
-                    //dd($this->modules['cities']['data'][0]);
-                    //$fileJson = '';
-                    ini_set('memory_limit', '1024M');
-                    //foreach (config('world.accepted_country_code') as $country_code) {
-
-                    if (in_array($country_code, config('world.accepted_country_zipcode'))) {
-
-                        $moduleSourcePath = __DIR__ . '/../../resources/json/data/' . $country_code . '/zipcodes.' . strtolower($country_code) . '.json';
-                        if (File::exists($moduleSourcePath)) {
-                            $this->modules['cities']['data'] = json_decode(File::get($moduleSourcePath), true);
-                            foreach ($this->modules['cities']['data']  as $zipcodeplace) {
-                                //$stateArray['id'] = $zipcodeplace['zipcode'];
-                                $stateArray['name'] = $zipcodeplace['state'];
-                                $stateArray['state_code'] = $zipcodeplace['state_code'];
-                                $state = $country
-                                ->states()
-                                ->firstOrCreate(Arr::only($stateArray, $stateFields));
-                                $stateCities[0] = $zipcodeplace;
-                                $stateCities[0]['name'] = $zipcodeplace['place'];
-                                // dd($stateCities);
-                                // $stateCities = Arr::where(
-                                //     $this->modules['cities']['data'],
-                                //     fn ($city) => $city['country_id'] = $countryArray['id'] && $city['state_id'] = $stateArray['id']
-                                // );
-                                // foreach ($stateCities as $key => $value) {
-                                //     dd($key, $value);
-                                //     $stateCities[$key] = $stateCities[$key];
-                                // }
-                                //dd($stateCities[0]);
-                                $this->seedCities($country, $state, $stateCities);
-                            }
-                        }
-                    } else {
-                        $moduleSourcePath = __DIR__ . '/../../resources/json/cities.json';
-                        if (File::exists($moduleSourcePath)) {
-                            $this->modules['cities']['data'] = json_decode(File::get($moduleSourcePath), true);
-
-                            $stateArray = array_map(fn ($field) => gettype($field) === 'string' ? trim($field) : $field, $stateArray);
-                            $stateCities = Arr::where(
-                                $this->modules['cities']['data'],
-                                fn ($city) => $city['country_id'] === $countryArray['id'] && $city['state_id'] === $stateArray['id']
-                            );
-
-                            $this->seedCities($country, $state, $stateCities);
-                        }
+                    ->firstOrCreate(
+                [
+                    'country_code' => $zipcodeplace['country_code'],
+                    'state_code' => $zipcodeplace['state_code'],
+                    'name' => $zipcodeplace['name']
+                ],
+                [
+                    'country_code' => $zipcodeplace['country_code'],
+                    'state_code' => $zipcodeplace['state_code'],
+                    'name' => $zipcodeplace['name'],
+                    'latitude' => $zipcodeplace['latitude'],
+                    'longitude' => $zipcodeplace['longitude']
+                ]
+                );
+                //dd($state);
+                // $stateCities = Arr::where($this->modules['cities']['data'], function ($value, $key) use ($state) {
+                //         return in_array($state['state_code'], $value);
+                //     });
+                $stateCities[0] = $zipcodeplace;
+                $stateCities[0]['name'] = $zipcodeplace['place'];
+                //dd(count($stateCities),$stateCities[0]);
+                $this->seedCities($country, $state, $stateCities);
+            }
+        } else {
+            // country states and cities
+            $moduleSourcePath = __DIR__ . '/../../resources/json/cities.json';
+            if (File::exists($moduleSourcePath)) {
+                $this->modules['cities']['data'] = json_decode(File::get($moduleSourcePath), true);
+            }
+            $countryStates = Arr::where($this->modules['states']['data'], fn ($state) => $state['country_id'] === $countryArray['id']);
+            // state schema
+            $stateFields = Schema::getColumnListing(config('world.migrations.states.table_name'));
+            $this->forgetFields($stateFields, ['id', 'country_id']);
+            foreach (array_chunk($countryStates, 20) as $stateChunks) {
+                foreach ($stateChunks as $stateArray) {
+                    $stateArray = array_map(fn ($field) => gettype($field) === 'string' ? trim($field) : $field, $stateArray);
+                    $state = $country
+                        ->states()
+                        ->create(Arr::only($stateArray, $stateFields));
+                    // state cities
+                    if ($this->isModuleEnabled('cities')) {
+                        $stateCities = Arr::where(
+                            $this->modules['cities']['data'],
+                            fn ($city) => $city['country_id'] === $countryArray['id'] && $city['state_id'] === $stateArray['id']
+                        );
+                        $this->seedCities($country, $state, $stateCities);
                     }
-                    //dd('stop');
-
-                    //$fileReadJson = File::get($moduleSourcePath);
-                    //$fileReadJson = str_replace("[","",$fileReadJson);
-                    //$fileReadJson = str_replace("]",",",$fileReadJson);
-                    //$fileJson .= $fileReadJson;
-                    //dd($fileJson);
-                    //}
-                    //dd($fileJson);
-                    //$fileJson = '['.$fileJson.']';
-                    //$fileJson = str_replace(",]","]",$fileJson);
-
-
                 }
             }
         }
+
+        // //************************************** */
+        // //dd(count($countryArray),$countryArray);
+        // $countryStates = Arr::where($this->modules['states']['data'], fn ($state) => $state['country_id'] === $countryArray['id']);
+        // //dd($countryStates);
+        // // state schema
+        // $stateFields = Schema::getColumnListing(config('world.migrations.states.table_name'));
+        // //$country_zipcode =  config('world.accepted_country_zipcode');
+        // $this->forgetFields($stateFields, ['id', 'country_id']);
+        // foreach (array_chunk($countryStates, 20) as $stateChunks) {
+        //     //dd($stateChunks[1],$countryStates);
+        //     foreach ($stateChunks as $stateArray) {
+        //         //dd(count($countryStates),count($stateChunks));
+        //         $stateArray = array_map(fn ($field) => gettype($field) === 'string' ? trim($field) : $field, $stateArray);
+        //         //dd(count($stateChunks));
+        //         $country_code = $stateArray['country_code'];
+        //         if (in_array($country_code, config('world.accepted_country_zipcode'))) {
+        //             //dd('yes');
+        //         } else {
+        //             $state = $country
+        //                 ->states()
+        //                 ->create(Arr::only($stateArray, $stateFields));
+        //         }
+        //         //dd($stateArray,$state);
+        //         // state cities
+        //         if ($this->isModuleEnabled('cities')) {
+        //             //dd($this->modules['cities']['data'][0]);
+        //             //$fileJson = '';
+        //             //ini_set('memory_limit', '1024M');
+        //             //foreach (config('world.accepted_country_code') as $country_code) {
+        //             if (in_array($country_code, config('world.accepted_country_zipcode'))) {
+        //                 $countryStates = [];
+        //                 $moduleSourcePath = __DIR__ . '/../../resources/json/data/' . $country_code . '/zipcodes.' . strtolower($country_code) . '.json';
+        //                 if (File::exists($moduleSourcePath)) {
+        //                     $this->modules['cities']['data'] = json_decode(File::get($moduleSourcePath), true);
+        //                     $conta = 0;
+        //                     foreach ($this->modules['cities']['data']  as $zipcodeplace) {
+        //                         //dd(count($this->modules['cities']['data']),$zipcodeplace,$stateArray);
+        //                         //$stateArray['id'] = $zipcodeplace['zipcode'];
+        //                         $stateArray['name'] = $zipcodeplace['state'];
+
+        //                         $stateArray['state_code'] = $zipcodeplace['state_code'];
+        //                         $state = $country
+        //                             ->states()
+        //                             ->firstOrCreate(Arr::only($stateArray, $stateFields));
+        //                         $stateCities[0] = $zipcodeplace;
+        //                         $stateCities[0]['name'] = $zipcodeplace['place'];
+        //                         //dd($this->modules['cities']['data'][0], $countryArray, $stateArray);
+        //                         // $stateCities = Arr::where(
+        //                         //     $this->modules['cities']['data'],
+        //                         //     fn ($city) => $city['country_code'] = $countryArray['iso2'] && $city['state_code'] = $stateArray['state_code']
+        //                         // );
+
+        //                         $stateCities = Arr::where($this->modules['cities']['data'], function ($value, $key) use ($stateArray) {
+        //                             //dd($value,$stateArray['state_code'],$key);
+        //                             //$city['country_code'] = $countryArray['iso2'];
+        //                             //$value['name'] = $value['place'];
+        //                             return in_array($stateArray['state_code'], $value);
+        //                         });
+        //                         $stateCities = [];
+
+        //                         $stateCities = [$zipcodeplace];
+        //                         //dd($stateCities);
+        //                         $stateCities[0]['name'] = $stateCities[0]['place'];
+        //                         // foreach ($stateCities as $key => $value) {
+        //                         //     $stateCities[$key]['name'] = $stateCities[$key]['place'];
+        //                         // }
+        //                         //dd(count($stateCities), $stateCities, count($zipcodeplace));
+        //                         //dd(count($stateCities),$stateCities[1]);
+        //                         $this->seedCities($country, $state, $stateCities);
+        //                         $conta += 1;
+        //                         if ($conta == 1) {
+        //                             //dd(count($stateCities),$stateCities[1]);
+        //                         }
+        //                         $this->command->getOutput()->block($conta);
+        //                     }
+        //                     //dd('stop');
+        //                 }
+        //             } else {
+        //                 $moduleSourcePath = __DIR__ . '/../../resources/json/cities.json';
+        //                 if (File::exists($moduleSourcePath)) {
+        //                     $this->modules['cities']['data'] = json_decode(File::get($moduleSourcePath), true);
+
+        //                     $stateArray = array_map(fn ($field) => gettype($field) === 'string' ? trim($field) : $field, $stateArray);
+        //                     $stateCities = Arr::where(
+        //                         $this->modules['cities']['data'],
+        //                         fn ($city) => $city['country_id'] === $countryArray['id'] && $city['state_id'] === $stateArray['id']
+        //                     );
+
+        //                     $this->seedCities($country, $state, $stateCities);
+        //                 }
+        //             }
+        //             //dd('stop');
+
+        //             //$fileReadJson = File::get($moduleSourcePath);
+        //             //$fileReadJson = str_replace("[","",$fileReadJson);
+        //             //$fileReadJson = str_replace("]",",",$fileReadJson);
+        //             //$fileJson .= $fileReadJson;
+        //             //dd($fileJson);
+        //             //}
+        //             //dd($fileJson);
+        //             //$fileJson = '['.$fileJson.']';
+        //             //$fileJson = str_replace(",]","]",$fileJson);
+
+
+        //         }
+        //     }
+        // }
+        // //************************************** */
     }
 
     /**

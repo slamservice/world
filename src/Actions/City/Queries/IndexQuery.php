@@ -25,6 +25,7 @@ class IndexQuery
 		// query
 		$query = City::query();
 
+
 		$query->when(
 			! empty($this->with),
 			fn ($q) => $q->with($this->with)
@@ -37,7 +38,7 @@ class IndexQuery
 
 		$query->when(
 			$this->search !== null,
-			fn ($q) => $q->where('name', 'like', '%' . $this->search . '%')
+			fn ($q) => $q->where('full_city', 'like', '%' . str_replace(" ","%",$this->search) . '%')
 		);
 
 		return $query->get();

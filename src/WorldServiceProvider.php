@@ -23,7 +23,7 @@ class WorldServiceProvider extends ServiceProvider
 		// Load routes
 		$this->loadRoutesFrom(__DIR__ . '/Routes/index.php');
 		// Load translations
-		//$this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'world');
+		$this->loadTranslationsFrom(__DIR__ . '/../lang', 'world');
 
 		if ($this->app->runningInConsole()) {
 			// Load the database migrations.
@@ -49,7 +49,7 @@ class WorldServiceProvider extends ServiceProvider
 		], 'world');
 
 		$this->publishes([
-			__DIR__ . '/../resources/lang' => lang_path('vendor/world'),
+			__DIR__ . '/../lang' => lang_path('vendor/world'),
 		], 'world');
 	}
 }

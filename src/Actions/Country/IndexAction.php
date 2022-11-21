@@ -77,6 +77,8 @@ class IndexAction extends BaseAction implements ActionInterface
 	 */
 	private function indexQuery(?string $search = null): Collection
 	{
+        //return $this->validatedFilters;
+
 		return $this->transform(
 			(new IndexQuery($this->validatedFilters, $this->validatedRelations, $search))(),
 			array_merge($this->validatedFields, $this->validatedRelations)
