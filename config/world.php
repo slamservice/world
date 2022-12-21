@@ -19,6 +19,15 @@ return [
 	*/
 	'disallowed_countries' => [],
 
+	/*
+	|--------------------------------------------------------------------------
+	| Zip Code allowed to be loaded
+	|
+	|
+	|--------------------------------------------------------------------------
+	*/
+	'accepted_country_zipcode' => ['IT'],
+
     /*
 	|--------------------------------------------------------------------------
 	| Supported country code.
@@ -184,7 +193,7 @@ return [
 					'length' => 3,
 				],
 				'native' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
 				'region' => [
@@ -196,11 +205,11 @@ return [
 					'type' => 'string',
 				],
 				'latitude' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
 				'longitude' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
 				'emoji' => [
@@ -222,16 +231,16 @@ return [
 					'length' => 3,
 				],
 				'state_code' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 					'length' => 6,
 				],
 				'latitude' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
 				'longitude' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
 			],
@@ -245,44 +254,44 @@ return [
 					'length' => 3,
 				],
 				'state_code' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 					'length' => 6,
 				],
 				'latitude' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
 				'longitude' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
                 'zipcode' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
                 'state' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
                 'province' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
                 'province_code' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
                 'community' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
                 'community_code' => [
-					'required' => false,
+					'required' => true,
 					'type' => 'string',
 				],
                 'full_city' => [
-					'required' => true,
+					'required' => false,
 					'type' => 'string',
 				],
 			],
