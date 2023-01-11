@@ -60,12 +60,13 @@ class IndexAction extends BaseAction implements ActionInterface
 		$this->validateArguments($fields, $filters);
 
 		// cache
-		$countries = $search === null
-			? Cache::rememberForever(
-				$this->cacheKey,
-				fn () => $this->indexQuery($search)
-			)
-			: $this->indexQuery($search);
+		$countries = $this->indexQuery($search);
+            // $countries = $search === null
+			// ? Cache::rememberForever(
+			// 	$this->cacheKey,
+			// 	fn () => $this->indexQuery($search)
+			// )
+			// : $this->indexQuery($search);
 
 		// response
 		return $this->formResponse($countries);
